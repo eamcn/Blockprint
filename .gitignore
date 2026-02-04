@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+
+# Flask
+instance/
+.webassets-cache
+
+# VS Code / editors
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
