@@ -92,20 +92,21 @@ Notes: On CMD use `.venv\Scripts\activate.bat`; on Git Bash or WSL use `source .
 
 ## Project Structure
 
-blockprint/
-├── app.py
-├── templates/
-│   ├── home.html
-│   ├── index.html        (circles)
-│   └── dome.html
-│
+```
+.
+├── controller.py
+├── mathFunction.py
+├── README.md
 ├── static/
-│   ├── style.css
-│   ├── script.js         (circles logic)
-│   ├── dome.js           (dome and 3D logic)
-│   └── home.js           (homepage animations)
-│
-└── README.md
+│   ├── dome.js
+│   ├── home.js
+│   ├── script.js
+│   └── style.css
+└── templates/
+	├── dome.html
+	├── home.html
+	└── index.html
+```
 
 ## Roadmap
 
