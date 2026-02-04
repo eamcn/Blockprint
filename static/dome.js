@@ -34,6 +34,13 @@ let domeData = null;
 
 let scene, camera, renderer, controls, instanced, animId;
 
+let doneByLayer = new Map();
+
+let layerCell = 1;
+let layerOx = 0;
+let layerOy = 0;
+let layerSize = 0;
+
 /* ---------- Helpers ---------- */
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 
@@ -74,6 +81,11 @@ function drawLayer(layer){
   const ox = Math.floor((rect.width - cell*size)/2);
   const oy = Math.floor((rect.height - cell*size)/2);
 
+  layerSize = size;
+  layerCell = cell;
+  layerOx = ox;
+  layerOy = oy;
+
   for(let z=0; z<size; z++){
     for(let x=0; x<size; x++){
       if(!layer.grid[z][x]) continue;
@@ -83,6 +95,26 @@ function drawLayer(layer){
 
       layerCtx.fillStyle = "#ff7a18";
       layerCtx.fillRect(px, py, cell, cell);
+
+      const yKey = layer.y;
+      if(!doneByLayer.has(yKey)) doneByLayer.set(yKey, new Set());
+      const set = doneByLayer.get(yKey);
+
+      const key = `${x},${z}`;
+      if(set.has(key)){
+        layerCtx.fillStyle = "rgba(0, 0, 0, 0.35)";
+        layerCtx.fillRect(px, py, cell, cell);
+
+        if(cell >= 10){
+            layerCtx.strokeStyle = "rgba(255,255,255,0.75)";
+            layerCtx.lineWidth = Math.max(1, Math.floor(cell / 10));
+            layerCtx.beginPath();
+            layerCtx.moveTo(px + cell*0.25, py + cell*0.55);
+            layerCtx.lineTo(px + cell*0.42, py + cell*0.72);
+            layerCtx.lineTo(px + cell*0.76, py + cell*0.30);
+            layerCtx.stroke();
+        }
+    }
 
       if(cell >= 3){
         layerCtx.strokeStyle = "rgba(0,0,0,0.35)";
@@ -166,6 +198,7 @@ async function loadDome(){
 
     const res = await fetch(`/api/dome?radius=${radius}&filled=${filled}&thickness=${thickness}`);
     domeData = await res.json();
+    doneByLayer = new Map();
 
     metaTextEl.textContent = `Radius ${domeData.radius}`;
     totalBlocksEl.textContent = `${domeData.total_blocks} blocks`;
@@ -200,6 +233,33 @@ btn.onclick = loadDome;
 window.onresize = ()=>{
   if(domeData) drawLayer(domeData.layers[+layerRange.value || 0]);
 };
+
+layerCanvas.addEventListener("click", (e) => {
+  if(!domeData) return;
+
+  const y = Number(layerRange.value || 0);
+  const layer = domeData.layers[y];
+  if(!layer) return;
+
+  const rect = layerCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const x = Math.floor((mx - layerOx) / layerCell);
+  const z = Math.floor((my - layerOy) / layerCell);
+
+  if(x < 0 || z < 0 || x >= layerSize || z >= layerSize) return;
+  if(layer.grid[z][x] !== 1) return; // only blocks
+
+  if(!doneByLayer.has(y)) doneByLayer.set(y, new Set());
+  const set = doneByLayer.get(y);
+
+  const key = `${x},${z}`;
+  if(set.has(key)) set.delete(key);
+  else set.add(key);
+
+  drawLayer(layer);
+});
 
 /* ---------- Init ---------- */
 setMode(false);

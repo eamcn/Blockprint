@@ -29,6 +29,7 @@ let lastData = null;
 let cellPx = 8;
 let offsetX = 0;
 let offsetY = 0;
+let doneSet = new Set();
 
 /* ---------- Helpers ---------- */
 function clamp(n, min, max){
@@ -99,6 +100,7 @@ async function loadCircle(){
   const res = await fetch(`/api/circle?radius=${radius}&filled=${filled}&thickness=${thickness}`);
   const data = await res.json();
   lastData = data;
+  doneSet = new Set();
 
   metaTextEl.textContent = `Radius ${data.radius} • Map ${data.size}×${data.size}`;
   blockCountEl.textContent = `${data.block_count} blocks`;
@@ -151,6 +153,22 @@ function draw(data){
 
       ctx.fillStyle = "rgba(255,122,24,0.95)";
       ctx.fillRect(px, py, cellPx, cellPx);
+
+      const key = `${x},${z}`;
+      if(doneSet.has(key)){
+        ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+        ctx.fillRect(px, py, cellPx, cellPx);
+        
+        if(cellPx >= 10){
+            ctx.strokeStyle = "rgba(255,255,255,0.75)";
+            ctx.lineWidth = Math.max(1, Math.floor(cellPx / 10));
+            ctx.beginPath();
+            ctx.moveTo(px + cellPx*0.25, py + cellPx*0.55);
+        ctx.lineTo(px + cellPx*0.42, py + cellPx*0.72);
+        ctx.lineTo(px + cellPx*0.76, py + cellPx*0.30);
+        ctx.stroke();
+        }
+    }
 
       if(cellPx >= 3){
         ctx.strokeStyle = "rgba(0,0,0,0.35)";
@@ -240,6 +258,28 @@ canvas.addEventListener("mousemove", (e) => {
 
   hintEl.textContent = `x=${cell.x}, z=${cell.z} • ${cell.filled ? "Block" : "Empty"}`;
 });
+
+canvas.addEventListener("click", (e) => {
+  if(!lastData) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const x = Math.floor((mx - offsetX) / cellPx);
+  const z = Math.floor((my - offsetY) / cellPx);
+
+  if(x < 0 || z < 0 || x >= lastData.size || z >= lastData.size) return;
+
+  if(lastData.grid[z][x] !== 1) return;
+
+  const key = `${x},${z}`;
+  if(doneSet.has(key)) doneSet.delete(key);
+  else doneSet.add(key);
+
+  draw(lastData);
+});
+
 
 /* ---------- Event wiring ---------- */
 chipOutline.addEventListener("click", () => { setMode(false); loadCircle(); });
