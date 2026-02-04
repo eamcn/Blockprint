@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minecraft Dome Blueprint</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="backBtn" href="/">← Back</a>
+
+      <div class="brand">
+        <div class="logoDot"></div>
+        <div>
+          <div class="title">Dome Blueprint</div>
+          <div class="subtitle" id="metaText">—</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control">
+          <label>Radius</label>
+          <div class="controlRow">
+            <input id="radiusRange" type="range" min="2" max="80" value="12">
+            <input id="radiusNumber" class="numInput" type="number" min="2" max="80" value="12">
+          </div>
+        </div>
+
+        <div class="control">
+          <label>Mode</label>
+          <div class="chips">
+            <button class="chip isActive" id="chipOutline">Outline</button>
+            <button class="chip" id="chipFilled">Filled</button>
+          </div>
+        </div>
+
+        <div class="control" id="thicknessWrap">
+          <label>Thickness</label>
+          <div class="controlRow">
+            <input id="thicknessRange" type="range" min="1" max="10" value="1">
+            <input id="thicknessNumber" class="numInput" type="number" min="1" max="10" value="1">
+          </div>
+        </div>
+
+        <div class="control actions">
+          <button class="btn" id="generateBtn">
+            Generate <span class="btnMeta" id="totalBlocks">0 blocks</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="domeLayout">
+      <!-- 3D preview -->
+      <section class="stage domePanel">
+        <div class="stageInner domeInner">
+          <div class="panelHead">
+            <div class="panelTitle">3D Preview</div>
+            <div class="panelMeta">Drag to rotate • Scroll to zoom</div>
+          </div>
+
+          <div class="canvasBox">
+            <canvas id="preview3d"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Layers -->
+      <section class="stage domePanel">
+        <div class="stageInner domeInner">
+          <div class="panelHead">
+            <div class="panelTitle">
+              Layer <span id="layerLabel">0</span>
+              <span class="panelMeta" id="layerMeta">—</span>
+            </div>
+
+            <div class="layerControls">
+              <button class="chip" id="prevLayer">◀</button>
+              <input id="layerRange" type="range" min="0" max="0" value="0">
+              <button class="chip" id="nextLayer">▶</button>
+            </div>
+          </div>
+
+          <div class="canvasBox">
+            <canvas id="layer2d"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footerLeft">© <span id="year"></span> eamcn</div>
+      <nav class="footerLinks">
+        <a class="iconLink" href="https://github.com/eamcn" target="_blank">GitHub</a>
+        <a class="iconLink" href="https://x.com/eamcndev" target="_blank">X</a>
+        <a class="iconLink" href="https://www.youtube.com/@eamcn" target="_blank">YouTube</a>
+      </nav>
+    </footer>
+  </div>
+
+  <!-- Import map for Three -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+
+  <script type="module" src="{{ url_for('static', filename='dome.js') }}"></script>
+</body>
+</html>

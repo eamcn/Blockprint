@@ -152,16 +152,17 @@ function draw(data){
       ctx.fillStyle = "rgba(255,122,24,0.95)";
       ctx.fillRect(px, py, cellPx, cellPx);
 
-      if(cellPx >= 6){
-        ctx.fillStyle = "rgba(255,154,61,0.25)";
-        ctx.fillRect(px, py, cellPx, Math.max(1, Math.floor(cellPx * 0.35)));
+      if(cellPx >= 3){
+        ctx.strokeStyle = "rgba(0,0,0,0.35)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 0.5, py + 0.5, cellPx - 1, cellPx - 1);
       }
     }
   }
 
   /* Grid lines */
   if(showGridEl.checked && cellPx >= 5){
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
     ctx.lineWidth = 1;
 
     const left = offsetX;
