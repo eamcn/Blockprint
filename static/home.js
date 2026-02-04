@@ -28,21 +28,16 @@ function drawBlock(ctx, x, y, s){
   ctx.fillStyle = "rgba(255,122,24,0.95)";
   ctx.fillRect(x, y, s, s);
 
-  // crisp separation between blocks
   if(s >= 4){
     ctx.strokeStyle = "rgba(0,0,0,0.35)";
     ctx.lineWidth = 1;
     ctx.strokeRect(x + 0.5, y + 0.5, s - 1, s - 1);
 
-    // tiny highlight band
     ctx.fillStyle = "rgba(255,154,61,0.18)";
     ctx.fillRect(x, y, s, Math.max(1, Math.floor(s * 0.32)));
   }
 }
 
-/* ============================================================
-   1) Circle preview (blueprint ring — like your better version)
-   ============================================================ */
 function animateCircleBlueprint(){
   const { c, ctx } = prepCanvas("previewCircle");
 
@@ -51,8 +46,7 @@ function animateCircleBlueprint(){
     const w = rect.width, h = rect.height;
     drawBg(ctx, w, h);
 
-    // blueprint grid
-    const grid = 32; // looks clean
+    const grid = 32;
     const pad = 14;
     const s = Math.max(2, Math.floor(Math.min((w - pad*2) / grid, (h - pad*2) / grid)));
     const mapW = s * grid;
@@ -60,7 +54,6 @@ function animateCircleBlueprint(){
     const ox = Math.floor((w - mapW) / 2);
     const oy = Math.floor((h - mapH) / 2);
 
-    // subtle grid lines (only when cells big enough)
     if(s >= 6){
       ctx.strokeStyle = "rgba(255,255,255,0.08)";
       ctx.lineWidth = 1;
@@ -73,12 +66,9 @@ function animateCircleBlueprint(){
     }
 
     const mid = (grid - 1) / 2;
-
-    // gentle pulse like breathing (very subtle)
     const pulse = 0.9 + 0.1 * Math.sin(t / 900);
     const r = (grid * 0.33) * pulse;
 
-    // outline ring thickness ~1 block
     const ringTh = 0.55;
 
     for(let z=0; z<grid; z++){
@@ -100,15 +90,6 @@ function animateCircleBlueprint(){
   requestAnimationFrame(frame);
 }
 
-/* ============================================================
-   2) Dome preview (ACTUAL dome: voxel hemisphere in isometric)
-   ============================================================ */
-
-/**
- * Build a voxel hemisphere once (radius r).
- * - filled: true makes it solid-ish; false makes a shell.
- * For preview, shell reads better and is cheaper.
- */
 function buildHemisphereVoxels(r, filled=false, thickness=1){
   const vox = [];
   const outer = r + 0.5;
@@ -126,7 +107,6 @@ function buildHemisphereVoxels(r, filled=false, thickness=1){
   return vox;
 }
 
-// rotate point around Y axis
 function rotY(p, a){
   const ca = Math.cos(a), sa = Math.sin(a);
   return {
@@ -136,9 +116,7 @@ function rotY(p, a){
   };
 }
 
-// simple isometric projection
 function isoProject(p, scale, cx, cy){
-  // tweak factors make it look more Minecraft-like
   const sx = (p.x - p.z) * scale * 0.95;
   const sy = (p.x + p.z) * scale * 0.48 - p.y * scale * 1.02;
   return { X: cx + sx, Y: cy + sy };
@@ -147,9 +125,8 @@ function isoProject(p, scale, cx, cy){
 function animateDomeIso(){
   const { c, ctx } = prepCanvas("previewDome");
 
-  // a shell dome reads best (you can see it's a dome)
-  const R = 11;              // preview radius (small = fast)
-  const TH = 1;              // shell thickness
+  const R = 11;
+  const TH = 1;
   const baseVox = buildHemisphereVoxels(R, false, TH);
 
   function frame(t){
@@ -157,26 +134,21 @@ function animateDomeIso(){
     const w = rect.width, h = rect.height;
     drawBg(ctx, w, h);
 
-    // small floor shadow to ground it
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.beginPath();
     ctx.ellipse(w*0.55, h*0.78, w*0.18, h*0.06, 0, 0, Math.PI*2);
     ctx.fill();
 
-    const scale = Math.max(4, Math.min(w, h) / 42); // adaptive
+    const scale = Math.max(4, Math.min(w, h) / 42);
     const cx = w * 0.5;
     const cy = h * 0.72;
 
-    // slow rotation
     const a = (t / 2200) % (Math.PI * 2);
 
-    // transform + sort for proper painter's algorithm
     const drawList = [];
     for(const v of baseVox){
-      // rotate around Y, and slightly lift to emphasize dome height
       const p = rotY(v, a);
 
-      // depth key: far first. Use z + x + y-ish.
       const depth = (p.x + p.z) + p.y * 0.35;
 
       const proj = isoProject(p, scale, cx, cy);
@@ -185,23 +157,19 @@ function animateDomeIso(){
         depth,
         x: proj.X,
         y: proj.Y,
-        // cheap shading: front faces brighter than back
         shade: 0.75 + 0.25 * (Math.cos(a) * (p.x / (R+0.01)) + Math.sin(a) * (p.z / (R+0.01)))
       });
     }
 
     drawList.sort((a,b) => a.depth - b.depth);
 
-    // block size on screen
     const s = Math.max(2, Math.floor(scale * 0.9));
     for(const d of drawList){
-      // apply per-block alpha shading (subtle)
       ctx.globalAlpha = 0.78 + 0.22 * d.shade;
       drawBlock(ctx, Math.floor(d.x), Math.floor(d.y), s);
     }
     ctx.globalAlpha = 1;
 
-    // tiny highlight on the “cap” so it reads as roof/apex
     ctx.fillStyle = "rgba(255,154,61,0.14)";
     ctx.beginPath();
     ctx.ellipse(cx, cy - (R * scale * 1.05), s*2.3, s*1.2, 0, 0, Math.PI*2);
@@ -213,6 +181,5 @@ function animateDomeIso(){
   requestAnimationFrame(frame);
 }
 
-/* Run */
 animateCircleBlueprint();
 animateDomeIso();
