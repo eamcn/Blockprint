@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minecraft Circle Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Minecraft Circle Blueprint</h1>
+
+<label>Radius:
+    <input type="number" id="radius" value="10" min="1" max="200">
+</label>
+
+<label>
+    <input type="checkbox" id="filled"> Filled
+</label>
+
+<button onclick="loadCircle()">Generate</button>
+
+<div id="grid"></div>
+
+<script>
+async function loadCircle() {
+    const radius = document.getElementById("radius").value;
+    const filled = document.getElementById("filled").checked ? 1 : 0;
+
+    const res = await fetch(`/api/circle?radius=${radius}&filled=${filled}`);
+    const data = await res.json();
+
+    drawGrid(data.grid, data.size);
+}
+
+function drawGrid(grid, size) {
+    const gridDiv = document.getElementById("grid");
+
+    gridDiv.style.gridTemplateColumns = `repeat(${size}, 16px)`;
+    gridDiv.innerHTML = "";
+
+    for (let z = 0; z < size; z++) {
+        for (let x = 0; x < size; x++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            if (grid[z][x] === 1) {
+                cell.classList.add("filled");
+            }
+
+            gridDiv.appendChild(cell);
+        }
+    }
+}
+
+// load default circle on page open
+loadCircle();
+</script>
+
+</body>
+</html>

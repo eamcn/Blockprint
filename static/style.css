@@ -1,0 +1,19 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#grid {
+    display: grid;
+    gap: 1px;
+    margin-top: 20px;
+}
+
+.cell {
+    width: 16px;
+    height: 16px;
+    background: #eee;
+}
+
+.filled {
+    background: #333;
+}
